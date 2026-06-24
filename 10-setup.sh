@@ -62,6 +62,16 @@ if [ -n "${SSH_AUTHORIZED_KEYS_URL-}" ]; then
         warn "Failed to fetch authorized keys from URL."
 fi
 
+# Add authorized keys from string if provided via SSH_AUTHORIZED_KEYS
+if [ -n "${SSH_AUTHORIZED_KEYS-}" ]; then
+    mkdir -p "${GIT_HOME}/.ssh"
+    # Merge SSH_AUTHORIZED_KEYS with AUTHORIZED_KEYS_URL, if present
+    {
+        cat "${SSH_AUTHORIZED_KEYS_FILE}" || echo '' ;
+        echo "${SSH_AUTHORIZED_KEYS}"
+    } | sort -u > "${SSH_AUTHORIZED_KEYS_FILE}"
+fi
+
 # Make the git user the owner of his home directory
 # Required by the SSH server to allow public key login
 if [ -f "${SSH_AUTHORIZED_KEYS_FILE}" ]; then
@@ -104,4 +114,12 @@ if [ -n "${REPOSITORIES_HOME_LINK-}" ]; then
         warn "Directory '${REPOSITORIES_HOME_LINK}' not found."
         warn "Home link not created."
     fi
+fi
+
+# Set up TCP forwarding
+if [ -n "${SSH_TCP_FORWARDING-}" ]; then
+    sed -e '/^AllowTcpForwarding/s/^/#/' -i ${SSHD_CONFIG_FILE}
+    sed -e '/^GatewayPorts/s/^/#/' -i ${SSHD_CONFIG_FILE}
+    echo "AllowTcpForwarding yes" >> ${SSHD_CONFIG_FILE}
+    echo "GatewayPorts yes" >> ${SSHD_CONFIG_FILE}
 fi

@@ -2,8 +2,10 @@ FROM alpine:3.23.3
 
 RUN set -ex; \
     apk add --no-cache \
-        git=2.52.0-r0 \
-        openssh=10.2_p1-r0 \
+        git \
+        openssh \
+        alpine-conf \
+        tzdata \
     ;
 
 # Generate SSH host keys

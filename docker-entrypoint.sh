@@ -34,6 +34,10 @@ find "/docker-entrypoint.d/" -follow -type f -print | \
         esac
     done
 
+if [ -n "${TZ-}" ]; then
+    setup-timezone -z $TZ
+fi
+
 msg "Container configuration completed"
 
 exec "$@"
